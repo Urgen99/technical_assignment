@@ -22,7 +22,7 @@ pipeline {
                 cd jenkins/java-tomcat-sample
                 docker build -t localtomcatimg:$BUILD_NUMBER .
                 cd $original_pwd
-                sh '''
+                '''
             }
         }
         stage('Deploy to Stagging Env') {
@@ -33,14 +33,14 @@ pipeline {
                 docker stop tomcatInstanceStaging || true
                 docker rm tomcatInstanceStaging || true
                 docker run -itd --name tomcatInstanceStaging -p 8082:8080 localtomcatimg:$BUILD_NUMBER
-                sh '''
+                '''
             }
         }
         stage('Deploy Production Environment') {
             agent any
             steps {
-                timeout(time:1, unit:'DAYS'){
-                input message:'Approve PRODUCTION Deployment?'
+                timeout(time: 1, unit: 'DAYS') {
+                    input message: 'Approve PRODUCTION Deployment?'
                 }
                 echo "Running app on Prod env"
                 sh '''
@@ -49,37 +49,6 @@ pipeline {
                 docker run -itd --name tomcatInstanceProd -p 8083:8080 localtomcatimg:$BUILD_NUMBER
                 '''
             }
-        }
-    }
-    post { 
-        always { 
-            mail to: 'tamangyurgen09@gmail.com',
-            subject: "Job '${JOB_NAME}' (${BUILD_NUMBER}) is waiting for input",
-            body: "Please go to ${BUILD_URL} and verify the build"
-        }
-        success {
-            mail bcc: '', body: """Hi Team,
-
-Build #$BUILD_NUMBER is successful, please go through the url
-
-$BUILD_URL
-
-and verify the details.
-
-Regards,
-DevOps Team""", cc: '', from: '', replyTo: '', subject: 'BUILD SUCCESS NOTIFICATION', to: 'tamangyurgen09@gmail.com'
-        }
-        failure {
-            mail bcc: '', body: """Hi Team,
-            
-Build #$BUILD_NUMBER is unsuccessful, please go through the url
-
-$BUILD_URL
-
-and verify the details.
-
-Regards,
-DevOps Team""", cc: '', from: '', replyTo: '', subject: 'BUILD FAILED NOTIFICATION', to: 'tamangyurgen09@gmail.com'
         }
     }
 }
