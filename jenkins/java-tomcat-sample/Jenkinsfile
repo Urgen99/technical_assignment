@@ -6,7 +6,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git 'https://github.com/Urgen99/technical_assignment1.git'
+                   echo 'Code already checked out by SCM. Proceeding...'
             }
         }
 
