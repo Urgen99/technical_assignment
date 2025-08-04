@@ -1,6 +1,30 @@
 pipeline {
     agent any
+    tools {
+        maven 'Maven 3.8.1' // Use your configured Maven installation
+    }
+    environment {
+        SONAR_TOKEN = credentials('sonar-token') // Use the Jenkins credentials ID you configured
+    }
     stages {
+        stage('Checkout Code') {
+            steps {
+                git 'https://github.com/Urgen99/technical_assignment1.git'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                    mvn -f jenkins/java-tomcat-sample/pom.xml clean verify sonar:sonar \
+                    -Dsonar.projectKey=java-tomcat-sample \
+                    -Dsonar.login=$SONAR_TOKEN
+                    '''
+                }
+            }
+        }
+
         stage('Build Application') {
             steps {
                 sh 'mvn -f jenkins/java-tomcat-sample/pom.xml clean package'
@@ -10,12 +34,17 @@ pipeline {
                     echo "Now Archiving the Artifacts...."
                     archiveArtifacts artifacts: '**/*.war'
                 }
-            }
+              }
         }
+
         stage('Create Tomcat Image') {
-            agent any
             steps {
-                copyArtifacts filter: '**/*.war', fingerprintArtifacts: true, projectName: env.JOB_NAME, selector: specific(env.BUILD_NUMBER)
+                copyArtifacts(
+                    filter: '**/*.war',
+                    fingerprintArtifacts: true,
+                    projectName: env.JOB_NAME,
+                    selector: specific(env.BUILD_NUMBER)
+                )
                 echo "Building docker image"
                 sh '''
                 original_pwd=$(pwd -P)
@@ -25,10 +54,21 @@ pipeline {
                 '''
             }
         }
-        stage('Deploy to Stagging Env') {
-            agent any
+        stage('Push to Docker Hub') {
             steps {
-                echo "Running app on stagging env"
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker push urgentamang/technicalassignment:$BUILD_NUMBER
+                    docker logout
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to Staging Env') {
+             steps {
+                echo "Running app on staging env"
                 sh '''
                 docker stop tomcatInstanceStaging || true
                 docker rm tomcatInstanceStaging || true
@@ -36,8 +76,8 @@ pipeline {
                 '''
             }
         }
-        stage('Deploy Production Environment') {
-            agent any
+
+        stage('Deploy to Production Env') {
             steps {
                 timeout(time: 1, unit: 'DAYS') {
                     input message: 'Approve PRODUCTION Deployment?'
@@ -52,3 +92,5 @@ pipeline {
         }
     }
 }
+
+                                                        
