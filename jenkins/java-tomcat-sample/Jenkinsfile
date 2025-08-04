@@ -1,8 +1,5 @@
 pipeline {
     agent any
-    tools {
-        maven 'Maven 3.8.1' // Use your configured Maven installation
-    }
     environment {
         SONAR_TOKEN = credentials('sonar-token') // Use the Jenkins credentials ID you configured
     }
