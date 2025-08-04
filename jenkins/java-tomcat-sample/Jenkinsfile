@@ -16,7 +16,9 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
+                    dir('jenkins/java-tomcat-sample') {
                     sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=technicalassignment -Dsonar.projectName=technicalassignment -Dsonar.token=${SONAR_TOKEN}'
+                }
                 }
             }
         }
