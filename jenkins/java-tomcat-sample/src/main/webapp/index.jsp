@@ -114,7 +114,7 @@
 </head>
 <body>
   <div class="card" role="main" aria-label="Deployment Success Message">
-    <h1>🎉 Deployment Successful!</h1>
+    <h1> Deployment Successful!</h1>
     <p>Your WAR file has been successfully deployed on Tomcat.<br />Your app is live and ready to rock!</p>
     <a href="#" class="btn" role="button">Explore More Features</a>
   </div>
