@@ -154,18 +154,18 @@ flowchart TD
 ## 🔗 Example Outputs
 
 * **SonarQube Dashboard** – Displays code quality reports.
- - ![SonarQube](Sonarqube.png)
+ - ![SonarQube](images/Sonarqube.png)
 * **Docker Hub Repository** – Stores pushed images.
- - ![Docker Hub](DockerHub1.png)
+ - ![Docker Hub](images/DockerHub1.png)
 * **Jenkins Console Output** – Shows build logs and deployment details.
- - ![Jenkins](Jenkins 3.png)
+ - ![Jenkins](images/Jenkins 3.png)
 
 ---
 
 ## 📧 Notifications
 
 * **Success Email** – Sent when the build completes successfully.
-  - ![Email](Email.png)
+  - ![Email](images/Email.png)
 * **Failure Email** – Sent when the build fails, with a link to logs.
 
 ---
