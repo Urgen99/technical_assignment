@@ -105,7 +105,7 @@ pipeline {
         stage('Push Docker Image to DockerHub') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhubcredentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh """
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                         docker tag localtomcatimg:${BUILD_NUMBER} urgentamang/technicalassignment:${BUILD_NUMBER}
@@ -145,12 +145,12 @@ pipeline {
 
     post {
         success {
-            mail to: 'team@example.com',
+            mail to: 'urgentamang0909@gmail.com',
                  subject: "Build #${BUILD_NUMBER} Succeeded",
                  body: "The Jenkins pipeline build #${BUILD_NUMBER} completed successfully."
         }
         failure {
-            mail to: 'team@example.com',
+            mail to: 'urgentamang0909@gmail.com',
                  subject: "Build #${BUILD_NUMBER} Failed",
                  body: "The Jenkins pipeline build #${BUILD_NUMBER} has failed."
         }
