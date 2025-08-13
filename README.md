@@ -36,13 +36,14 @@ This project implements a **Continuous Integration and Continuous Deployment (CI
 ## 📂 Pipeline Stages
 
 1. **Checkout Code** – Pulls the source code from the repository.
+- ![Github](images/Github.png)
 2. **SonarQube Analysis** – Performs static code analysis and sends results to SonarQube dashboard.
 3. **Build Application** – Uses Maven to package the Java application into a `.war` file.
 4. **Create Tomcat Image** – Builds a custom Docker image with the `.war` file deployed in Tomcat.
-5. **Push to Docker Hub** – Tags and uploads the image to Docker Hub.
-6. **Deploy to Staging** – Runs the application in a staging environment on port **8082**.
-7. **Deploy to Production** – Manual approval required; runs the application in a production environment on port **8083**.
-8. **Post-Build Notifications** – Sends email notifications for build success or failure.
+6. **Push to Docker Hub** – Tags and uploads the image to Docker Hub.
+7. **Deploy to Staging** – Runs the application in a staging environment on port **8082**.
+8. **Deploy to Production** – Manual approval required; runs the application in a production environment on port **8083**.
+9. **Post-Build Notifications** – Sends email notifications for build success or failure.
 
 ---
 
