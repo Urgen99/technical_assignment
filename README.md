@@ -116,32 +116,9 @@ pipeline {
             }
         }
 
-        stage('Provision EC2 using Terraform') {
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'aws-creds', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                        sh """
-                        cd terraform
-                        terraform init
-                        terraform apply -auto-approve -var="instance_name=techassign-${BUILD_NUMBER}"
-                        """
-                    }
-                }
-            }
         }
 
-        stage('Deploy using Ansible') {
-            steps {
-                script {
-                    sh """
-                    cd ansible
-                    ansible-playbook -i inventory deploy.yml \
-                    --extra-vars "image_tag=${BUILD_NUMBER}"
-                    """
-                }
-            }
-        }
-    }
+    
 
     post {
         success {
