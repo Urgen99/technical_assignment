@@ -57,7 +57,10 @@ This project implements a **Continuous Integration and Continuous Deployment (CI
 ## 📜 Jenkinsfile
 
 The complete pipeline is defined in a `Jenkinsfile`, which automates all the above steps. Below is the jenkins file:
+## Jenkins Pipeline (Full Script)
 
+<details>
+<summary>Click to view Jenkinsfile</summary>
 
 
 pipeline {
