@@ -62,19 +62,23 @@ The complete pipeline is defined in a `Jenkinsfile`, which automates all the abo
 <details>
 <summary>Click to view Jenkinsfile</summary>
 
-
+```groovy
 pipeline {
     agent any
-    tools {
+    tools { 
         maven 'Default Maven' 
     }
     environment {
-        SONAR_TOKEN = credentials('sonartoken') // Jenkins credentials ID
+        SONAR_TOKEN = credentials('sonartoken')
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
+        AWS_CREDENTIALS = credentials('aws-creds')
     }
+
     stages {
         stage('Checkout Code') {
             steps {
-                echo 'Code already checked out by SCM. Proceeding...'
+                echo 'Checking out source code from SCM...'
+                checkout scm
             }
         }
 
@@ -82,114 +86,79 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     dir('jenkins/java-tomcat-sample') {
-                    sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=technicalassignment -Dsonar.projectName=technicalassignment -Dsonar.token=${SONAR_TOKEN}'
-                }
-                }
-            }
-        }
-
-        stage('Build Application') {
-            steps {
-                sh 'mvn -f jenkins/java-tomcat-sample/pom.xml clean package'
-            }
-            post {
-                success {
-                    echo "Now Archiving the Artifacts...."
-                    archiveArtifacts artifacts: '**/*.war'
+                        sh """
+                        mvn clean verify sonar:sonar \
+                        -Dsonar.projectKey=technicalassignment \
+                        -Dsonar.projectName=technicalassignment \
+                        -Dsonar.login=${SONAR_TOKEN}
+                        """
+                    }
                 }
             }
         }
 
-        stage('Create Tomcat Image') {
+        stage('Build Docker Image') {
             steps {
-                copyArtifacts(
-                    filter: '**/*.war',
-                    fingerprintArtifacts: true,
-                    projectName: env.JOB_NAME,
-                    selector: specific(env.BUILD_NUMBER)
-                )
-                echo "Building docker image"
-                sh '''
-                original_pwd=$(pwd -P)
-                cd jenkins/java-tomcat-sample
-                docker build -t localtomcatimg:$BUILD_NUMBER .
-                cd $original_pwd
-                '''
-            }
-        }
-
-        stage('Push to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhubcredentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                    docker tag localtomcatimg:$BUILD_NUMBER urgentamang/technicalassignment:$BUILD_NUMBER
-                    docker push urgentamang/technicalassignment:$BUILD_NUMBER
-                    docker logout
-                    '''
+                script {
+                    sh "docker build -t localtomcatimg:${BUILD_NUMBER} jenkins/java-tomcat-sample"
                 }
             }
         }
 
-        stage('Deploy to Staging Env') {
+        stage('Push Docker Image to DockerHub') {
             steps {
-                echo "Running app on staging env"
-                sh '''
-                docker stop tomcatInstanceStaging || true
-                docker rm tomcatInstanceStaging || true
-                docker run -itd --name tomcatInstanceStaging -p 8082:8080 localtomcatimg:$BUILD_NUMBER
-                '''
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh """
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker tag localtomcatimg:${BUILD_NUMBER} urgentamang/technicalassignment:${BUILD_NUMBER}
+                        docker push urgentamang/technicalassignment:${BUILD_NUMBER}
+                        """
+                    }
+                }
             }
         }
 
-        stage('Deploy to Production Env') {
+        stage('Provision EC2 using Terraform') {
             steps {
-                timeout(time: 1, unit: 'DAYS') {
-                    input message: 'Approve PRODUCTION Deployment?'
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'aws-creds', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        sh """
+                        cd terraform
+                        terraform init
+                        terraform apply -auto-approve -var="instance_name=techassign-${BUILD_NUMBER}"
+                        """
+                    }
                 }
-                echo "Running app on Prod env"
-                sh '''
-                docker stop tomcatInstanceProd || true
-                docker rm tomcatInstanceProd || true
-                docker run -itd --name tomcatInstanceProd -p 8083:8080 localtomcatimg:$BUILD_NUMBER
-                '''
+            }
+        }
+
+        stage('Deploy using Ansible') {
+            steps {
+                script {
+                    sh """
+                    cd ansible
+                    ansible-playbook -i inventory deploy.yml \
+                    --extra-vars "image_tag=${BUILD_NUMBER}"
+                    """
+                }
             }
         }
     }
-    post { 
-        always { 
-            mail to: 'urgentamang0909@gmail.com',
-            subject: "Job '${JOB_NAME}' (${BUILD_NUMBER}) is waiting for input",
-            body: "Please go to ${BUILD_URL} and verify the build"
-        }
+
+    post {
         success {
-            mail bcc: '', body: """Hi Team,
-
-    Build #$BUILD_NUMBER is successful, please go through the url
-
-    $BUILD_URL
-
-    and verify the details.
-
-    Regards,
-    DevOps Team""", cc: '', from: '', replyTo: '', subject: 'BUILD SUCCESS NOTIFICATION', to: 'urgentamang0909@gmail.com'
+            mail to: 'team@example.com',
+                 subject: "Build #${BUILD_NUMBER} Succeeded",
+                 body: "The Jenkins pipeline build #${BUILD_NUMBER} completed successfully."
         }
         failure {
-            mail bcc: '', body: """Hi Team,
-            
-    Build #$BUILD_NUMBER is unsuccessful, please go through the url
-
-    $BUILD_URL
-
-    and verify the details.
-
-    Regards,
-    DevOps Team""", cc: '', from: '', replyTo: '', subject: 'BUILD FAILED NOTIFICATION', to: 'urgentamang0909@gmail.com'
+            mail to: 'team@example.com',
+                 subject: "Build #${BUILD_NUMBER} Failed",
+                 body: "The Jenkins pipeline build #${BUILD_NUMBER} has failed."
         }
     }
 }
-
----
 
 ## 🖼️ Pipeline Flow Diagram
 
