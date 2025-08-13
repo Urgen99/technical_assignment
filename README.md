@@ -41,7 +41,6 @@ This project implements a **Continuous Integration and Continuous Deployment (CI
 2. **SonarQube Analysis** – Performs static code analysis and sends results to SonarQube dashboard.
 - ![SonarQube](images/Sonarqube.png)
 3. **Build Application** – Uses Maven to package the Java application into a `.war` file.
-  
 4. **Create Tomcat Image** – Builds a custom Docker image with the `.war` file deployed in Tomcat.
 5. **Push to Docker Hub** – Tags and uploads the image to Docker Hub.
  - ![Docker](images/DockerHub.png)
@@ -158,7 +157,7 @@ flowchart TD
 * **Docker Hub Repository** – Stores pushed images.
  - ![Docker Hub](images/DockerHub1.png)
 * **Jenkins Console Output** – Shows build logs and deployment details.
- - ![Jenkins](images/Jenkins 3.png)
+ - ![Jenkins](images/Jenkins3.png)
 
 ---
 
