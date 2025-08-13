@@ -23,7 +23,6 @@ This project implements a **Continuous Integration and Continuous Deployment (CI
 ## 🔧 Tools & Technologies
 
 * **Jenkins** – CI/CD automation
-  - ![Jenkins Pipeline Job](jenkins.png)
 * **SonarQube** – Code quality analysis
 * **Maven** – Build automation tool
 * **Docker** – Containerization
@@ -44,13 +43,13 @@ This project implements a **Continuous Integration and Continuous Deployment (CI
 3. **Build Application** – Uses Maven to package the Java application into a `.war` file.
   
 4. **Create Tomcat Image** – Builds a custom Docker image with the `.war` file deployed in Tomcat.
-6. **Push to Docker Hub** – Tags and uploads the image to Docker Hub.
-7. - ![Docker](images/DockerHub.png)
-   - - ![Docker](images/DockerHub1.png)
-8. **Deploy to Staging** – Runs the application in a staging environment on port **8082**.
-9. **Deploy to Production** – Manual approval required; runs the application in a production environment on port **8083**.
+5. **Push to Docker Hub** – Tags and uploads the image to Docker Hub.
+ - ![Docker](images/DockerHub.png)
+6. **Deploy to Staging** – Runs the application in a staging environment on port **8082**.
+7. **Deploy to Production** – Manual approval required; runs the application in a production environment on port **8083**.
   - ![Deployment](images/Deployment.png)
-11. **Post-Build Notifications** – Sends email notifications for build success or failure.
+8. **Post-Build Notifications** – Sends email notifications for build success or failure.
+     - ![email](Email.png)
 
 ---
 
@@ -59,8 +58,6 @@ This project implements a **Continuous Integration and Continuous Deployment (CI
 The complete pipeline is defined in a `Jenkinsfile`, which automates all the above steps. Below is the jenkins file:
 ## Jenkins Pipeline (Full Script)
 
-<details>
-<summary>Click to view Jenkinsfile</summary>
 
 ```groovy
 pipeline {
@@ -180,14 +177,18 @@ flowchart TD
 ## 🔗 Example Outputs
 
 * **SonarQube Dashboard** – Displays code quality reports.
+ - ![SonarQube](Sonarqube.png)
 * **Docker Hub Repository** – Stores pushed images.
+ - ![Docker Hub](DockerHub1.png)
 * **Jenkins Console Output** – Shows build logs and deployment details.
+ - ![Jenkins](Jenkins 3.png)
 
 ---
 
 ## 📧 Notifications
 
 * **Success Email** – Sent when the build completes successfully.
+  - ![Email](Email.png)
 * **Failure Email** – Sent when the build fails, with a link to logs.
 
 ---
